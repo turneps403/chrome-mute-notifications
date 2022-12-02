@@ -4,14 +4,10 @@ chrome.storage.local.get({'notificationSetting': 'none'},
   }
 );
 
-chrome.browserAction.onClicked.addListener(function(tab) {
+chrome.action.onClicked.addListener(function(tab) {
   chrome.storage.local.get({'notificationSetting': 'none'},
     function (data) {
-      if (data['notificationSetting'] != 'block') {
-        setNotificationSetting('block');
-      } else {
-        setNotificationSetting('none');
-      }
+      setNotificationSetting(data['notificationSetting'] != 'block' ? 'block' : 'none');
     }
   );
 });
@@ -26,25 +22,25 @@ function setNotificationSetting(setting) {
       'setting': setting
     });
 
-    chrome.browserAction.setIcon({
+    chrome.action.setIcon({
       'path': {
-        '19': 'icon-off-19.png',
-        '38': 'icon-off-38.png'
+        '19': 'images/icon-off-19.png',
+        '38': 'images/icon-off-38.png'
       }
     });
-    chrome.browserAction.setTitle({
+    chrome.action.setTitle({
       'title': 'Unmute notifications'
     });
-  } else {  // none
+  } else {
     chrome.contentSettings['notifications'].clear({});
 
-    chrome.browserAction.setIcon({
+    chrome.action.setIcon({
       'path': {
-        '19': 'icon-on-19.png',
-        '38': 'icon-on-38.png'
+        '19': 'images/icon-on-19.png',
+        '38': 'images/icon-on-38.png'
       }
     });
-    chrome.browserAction.setTitle({
+    chrome.action.setTitle({
       'title': 'Mute notifications'
     });
   }

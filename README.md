@@ -1,4 +1,4 @@
-# Mute Notifications for Chrome
-A Chrome extension to disable all desktop notifications with one click. Available [from the Chrome  Web Store](https://chrome.google.com/webstore/detail/mute-notifications/bmjdeaihnngnnnaldgakphcaanioohgn).
+# 🔇 Mute Notifications for Chrome
+Enjoy 1 hour of silence with this Chrome extension. It disables all desktop notifications.
 
-![Screenshot](screenshot.png)
+![Screenshot](images/chill-and-work.png)
