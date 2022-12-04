@@ -1,10 +1,14 @@
-const skipAfter = 3600_000;
-let blockTimeout;
-let badgeTimeout;
+chrome.alarms.create("1min_badge_refresh", {
+  delayInMinutes: 1,
+  periodInMinutes: 1
+});
+
+const minSilence = 60;
+
+let hasStoppedAt;
 
 const setBadge = (num) => {
     chrome.action.setBadgeText({text: num ? num.toString() : ""});
-    // no badge - no color
     if (num <= 10) {
       chrome.action.setBadgeBackgroundColor({color: "#FFB6C1"});
     } else if (num <= 20) {
@@ -12,25 +16,11 @@ const setBadge = (num) => {
     } else {
       chrome.action.setBadgeBackgroundColor({color: "#B0C4DE"});
     }
-    if (num > 0) {
-      let nextBadge = num - 1;
-      badgeTimeout = setTimeout(() => {
-        setBadge(nextBadge);
-      }, 60_000);
-    } else {
-      badgeTimeout = undefined;
-    }
 }
 
 const unlockNotification = () => {
-  if (blockTimeout) {
-    clearTimeout(blockTimeout);
-    blockTimeout = undefined;
-  }
-  if (badgeTimeout) {
-    clearTimeout(badgeTimeout);
-    badgeTimeout = undefined;
-  }
+  hasStoppedAt = undefined;
+  setBadge(0);
   chrome.contentSettings['notifications'].clear({});
   chrome.action.setIcon({
     'path': {
@@ -40,17 +30,12 @@ const unlockNotification = () => {
       '64': 'images/volume-64.png'
     }
   });
-  chrome.action.setBadgeText({text: ""});
   console.log("notification is unLoked");
 }
 
 const lockNotification = () => {
-  blockTimeout = setTimeout(() => {
-    console.log("delayed unlockNotification was succesfully invoked");
-    blockTimeout = undefined;
-    unlockNotification();
-  }, skipAfter);
-  setBadge(60);
+  hasStoppedAt = Date.now() + minSilence * 60_000;
+  setBadge(minSilence);
   chrome.contentSettings['notifications'].set({
     'primaryPattern': '<all_urls>',
     'setting': 'block'
@@ -66,4 +51,15 @@ const lockNotification = () => {
   console.log("after lockNotification");
 }
 
-chrome.action.onClicked.addListener(() => blockTimeout ? unlockNotification() : lockNotification());
+chrome.alarms.onAlarm.addListener(function(alarm) {
+  if (alarm.name === "1min_badge_refresh" && hasStoppedAt) {
+    if (Date.now() >= hasStoppedAt) {
+      unlockNotification();
+    } else {
+      let min_left = (hasStoppedAt - Date.now()) / 60_000;
+      setBadge(min_left.toFixed());
+    }
+  }
+});
+
+chrome.action.onClicked.addListener(() => hasStoppedAt ? unlockNotification() : lockNotification());

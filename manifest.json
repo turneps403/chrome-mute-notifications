@@ -9,7 +9,8 @@
     "128": "images/logo-128.png"
   },
   "permissions": [
-    "contentSettings"
+    "contentSettings",
+    "alarms"
   ],
   "action": {
     "default_icon": {
