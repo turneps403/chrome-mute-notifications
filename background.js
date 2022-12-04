@@ -1,51 +1,42 @@
-chrome.storage.local.get({'notificationSetting': 'none'},
-  function (data) {
-    setNotificationSetting(data['notificationSetting']);
-  }
-);
+const skipAfter = 3600_000;
+let blockTimeout;
 
-chrome.browserAction.onClicked.addListener(function(tab) {
-  chrome.storage.local.get({'notificationSetting': 'none'},
-    function (data) {
-      if (data['notificationSetting'] != 'block') {
-        setNotificationSetting('block');
-      } else {
-        setNotificationSetting('none');
-      }
+const unlockNotification = () => {
+  if (blockTimeout) {
+    clearTimeout(blockTimeout);
+    blockTimeout = undefined;
+  }
+  chrome.contentSettings['notifications'].clear({});
+  chrome.action.setIcon({
+    'path': {
+      '16': 'images/volume-16.png',
+      '24': 'images/volume-24.png',
+      '32': 'images/volume-32.png',
+      '64': 'images/volume-64.png'
     }
-  );
-});
-
-
-function setNotificationSetting(setting) {
-  chrome.storage.local.set({'notificationSetting': setting});
-
-  if (setting == 'block') {
-    chrome.contentSettings['notifications'].set({
-      'primaryPattern': '<all_urls>',
-      'setting': setting
-    });
-
-    chrome.browserAction.setIcon({
-      'path': {
-        '19': 'icon-off-19.png',
-        '38': 'icon-off-38.png'
-      }
-    });
-    chrome.browserAction.setTitle({
-      'title': 'Unmute notifications'
-    });
-  } else {  // none
-    chrome.contentSettings['notifications'].clear({});
-
-    chrome.browserAction.setIcon({
-      'path': {
-        '19': 'icon-on-19.png',
-        '38': 'icon-on-38.png'
-      }
-    });
-    chrome.browserAction.setTitle({
-      'title': 'Mute notifications'
-    });
-  }
+  });
+  console.log("notification is unLoked");
 }
+
+const lockNotification = () => {
+  blockTimeout = setTimeout(() => {
+    console.log("delayed unlockNotification was succesfully invoked");
+    blockTimeout = undefined;
+    unlockNotification();
+  }, skipAfter);
+  chrome.contentSettings['notifications'].set({
+    'primaryPattern': '<all_urls>',
+    'setting': 'block'
+  });
+  chrome.action.setIcon({
+    'path': {
+      '16': 'images/volume-mute-16.png',
+      '24': 'images/volume-mute-24.png',
+      '32': 'images/volume-mute-32.png',
+      '64': 'images/volume-mute-64.png'
+    }
+  });
+  console.log("after lockNotification");
+}
+
+chrome.action.onClicked.addListener(() => blockTimeout ? unlockNotification() : lockNotification());
