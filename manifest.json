@@ -4,8 +4,9 @@
   "description": "Disable all desktop notifications with one click on 1 hour.",
   "version": "1.0.0",
   "icons": {
-    "128": "images/logo-128.png",
-    "48": "images/logo-48.png"
+    "32": "images/volume-mute-32.png",
+    "64": "images/volume-mute-64.png",
+    "128": "images/volume-mute-128.png"
   },
   "permissions": [
     "contentSettings",
@@ -13,8 +14,10 @@
   ],
   "action": {
     "default_icon": {
-      "19": "images/icon-on-19.png",
-      "38": "images/icon-on-38.png"
+      "16": "images/volume-16.png",
+      "24": "images/volume-24.png",
+      "32": "images/volume-32.png",
+      "64": "images/volume-64.png"
     }
   },
   "background": {
