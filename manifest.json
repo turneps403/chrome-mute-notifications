@@ -9,8 +9,7 @@
     "128": "images/volume-mute-128.png"
   },
   "permissions": [
-    "contentSettings",
-    "storage"
+    "contentSettings"
   ],
   "action": {
     "default_icon": {
