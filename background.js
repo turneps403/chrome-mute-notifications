@@ -1,64 +1,71 @@
-let blockHolder;
+const skipAfter = 5000;
+let blockTimeout;
 
 const unlockNotification = () => {
-  chrome.storage.session.set({'isNotifyDisabled': 0}).then(() => {
-    console.log("notification is unLoked");
-    chrome.contentSettings['notifications'].clear({});
-    chrome.action.setIcon({
-      'path': {
-        '19': 'images/icon-on-19.png',
-        '38': 'images/icon-on-38.png'
-      }
-    });
+  if (blockTimeout) {
+    clearTimeout(blockTimeout);
+    blockTimeout = undefined;
+  }
+  chrome.contentSettings['notifications'].clear({});
+  chrome.action.setIcon({
+    'path': {
+      '19': 'images/icon-on-19.png',
+      '38': 'images/icon-on-38.png'
+    }
   });
-  console.log("after unlockNotification");
+  console.log("notification is unLoked");
 }
 
 const lockNotification = () => {
-  chrome.storage.session.set({'isNotifyDisabled': 1}).then(() => {
-    chrome.contentSettings['notifications'].set({
-      'primaryPattern': '<all_urls>',
-      'setting': 'block'
-    });
-    chrome.action.setIcon({
-      'path': {
-        '19': 'images/icon-off-19.png',
-        '38': 'images/icon-off-38.png'
-      }
-    });
-    delayUnlock(5000);
-    console.log("after lockNotification");
+  blockTimeout = setTimeout(() => {
+    console.log("delayed unlockNotification was succesfully invoked");
+    blockTimeout = undefined;
+    unlockNotification();
+  }, skipAfter);
+  chrome.contentSettings['notifications'].set({
+    'primaryPattern': '<all_urls>',
+    'setting': 'block'
   });
-}
-
-function delayUnlock(ms) {
-  var timeWatcher;
-
-  var promise = new Promise(() =>
-    timeWatcher = setTimeout(() => {
-      console.log("delayed unlockNotification was succesfully invoked");
-      blockHolder = undefined;
-      unlockNotification();
-    }, ms)
-  );
-
-  blockHolder = {
-    promise,
-    cancel: () => {
-      console.log("cancel locking by call unlockNotification");
-      clearTimeout(timeWatcher);
-      blockHolder = undefined;
-      unlockNotification();
+  chrome.action.setIcon({
+    'path': {
+      '19': 'images/icon-off-19.png',
+      '38': 'images/icon-off-38.png'
     }
-  };
+  });
+  console.log("after lockNotification");
 }
+
+// function delayUnlock(ms) {
+//   var timeWatcher;
+
+//   var promise = new Promise(() =>
+//     timeWatcher = setTimeout(() => {
+//       console.log("delayed unlockNotification was succesfully invoked");
+//       blockHolder = undefined;
+//       unlockNotification();
+//     }, ms)
+//   );
+
+//   blockHolder = {
+//     promise,
+//     cancel: () => {
+//       console.log("cancel locking by call unlockNotification");
+//       clearTimeout(timeWatcher);
+//       blockHolder = undefined;
+//       unlockNotification();
+//     }
+//   };
+// }
 
 chrome.action.onClicked.addListener(function(tab) {
-  chrome.storage.local.get({'isNotifyDisabled': 0}, (data) => {
-    console.log("isNotifyDisabled:", data['isNotifyDisabled'] ? 1 : 0, "blockHolder:", blockHolder ? 1 : 0);
-    if (blockHolder) blockHolder.cancel();
-    data['isNotifyDisabled'] ? unlockNotification() : lockNotification();
-  });
+  blockTimeout ? unlockNotification() : lockNotification();
+    // console.log("blockHolder:", blockHolder ? 1 : 0);
+    // if (blockHolder) {
+    //   blockHolder.cancel();
+    //   unlockNotification();
+    // } else {
+    //   lockNotification();
+    // }
 });
 
 
